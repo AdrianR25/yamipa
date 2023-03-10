@@ -37,6 +37,7 @@ public class ImageRenderer implements Listener {
 
     /**
      * Class constructor
+     * 
      * @param configPath Path to configuration file
      */
     public ImageRenderer(@NotNull String configPath) {
@@ -49,7 +50,8 @@ public class ImageRenderer implements Listener {
     public void start() {
         loadConfig();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveConfig, SAVE_INTERVAL, SAVE_INTERVAL);
+        saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveConfig, SAVE_INTERVAL,
+                SAVE_INTERVAL);
     }
 
     /**
@@ -108,18 +110,14 @@ public class ImageRenderer implements Listener {
                 Rotation rotation = Rotation.valueOf(row[6]);
                 int width = Math.min(FakeImage.MAX_DIMENSION, Math.abs(Integer.parseInt(row[7])));
                 int height = Math.min(FakeImage.MAX_DIMENSION, Math.abs(Integer.parseInt(row[8])));
-                Date placedAt = (row.length > 9 && !row[9].equals("")) ?
-                    new Date(Long.parseLong(row[9])*1000L) :
-                    null;
-                UUID placedById = (row.length > 10 && !row[10].equals("")) ?
-                    UUID.fromString(row[10]) :
-                    FakeImage.UNKNOWN_PLAYER_ID;
+                Date placedAt = (row.length > 9 && !row[9].equals("")) ? new Date(Long.parseLong(row[9]) * 1000L)
+                        : null;
+                UUID placedById = (row.length > 10 && !row[10].equals("")) ? UUID.fromString(row[10])
+                        : FakeImage.UNKNOWN_PLAYER_ID;
                 OfflinePlayer placedBy = Bukkit.getOfflinePlayer(placedById);
-                int flags = (row.length > 11) ?
-                    Math.max(Integer.parseInt(row[11]), 0) :
-                    FakeImage.DEFAULT_PLACE_FLAGS;
+                int flags = (row.length > 11) ? Math.max(Integer.parseInt(row[11]), 0) : FakeImage.DEFAULT_PLACE_FLAGS;
                 FakeImage fakeImage = new FakeImage(filename, location, face, rotation, width, height,
-                    placedAt, placedBy, flags);
+                        placedAt, placedBy, flags);
                 addImage(fakeImage, true);
             } catch (Exception e) {
                 plugin.log(Level.SEVERE, "Invalid fake image properties: " + String.join(";", row), e);
@@ -131,7 +129,8 @@ public class ImageRenderer implements Listener {
      * Save configuration to disk
      */
     private void saveConfig() {
-        if (!hasConfigChanged.get()) return;
+        if (!hasConfigChanged.get())
+            return;
 
         // Get all fake images
         Set<FakeImage> fakeImages = new HashSet<>();
@@ -139,7 +138,8 @@ public class ImageRenderer implements Listener {
             fakeImages.addAll(fakeImagesPart);
         }
 
-        // Placed here so, if another change comes while saving, we don't lose those changes (will be saved later)
+        // Placed here so, if another change comes while saving, we don't lose those
+        // changes (will be saved later)
         hasConfigChanged.set(false);
 
         // Export to configuration properties
@@ -147,19 +147,19 @@ public class ImageRenderer implements Listener {
         for (FakeImage fakeImage : fakeImages) {
             Location location = fakeImage.getLocation();
             UUID placedById = fakeImage.getPlacedBy().getUniqueId();
-            String[] row = new String[]{
-                fakeImage.getFilename(),
-                location.getChunk().getWorld().getName(),
-                location.getBlockX() + "",
-                location.getBlockY() + "",
-                location.getBlockZ() + "",
-                fakeImage.getBlockFace().name(),
-                fakeImage.getRotation().name(),
-                fakeImage.getWidth() + "",
-                fakeImage.getHeight() + "",
-                (fakeImage.getPlacedAt() == null) ? "" : (fakeImage.getPlacedAt().getTime() / 1000) + "",
-                placedById.equals(FakeImage.UNKNOWN_PLAYER_ID) ? "" : placedById.toString(),
-                fakeImage.getFlags() + ""
+            String[] row = new String[] {
+                    fakeImage.getFilename(),
+                    location.getChunk().getWorld().getName(),
+                    location.getBlockX() + "",
+                    location.getBlockY() + "",
+                    location.getBlockZ() + "",
+                    fakeImage.getBlockFace().name(),
+                    fakeImage.getRotation().name(),
+                    fakeImage.getWidth() + "",
+                    fakeImage.getHeight() + "",
+                    (fakeImage.getPlacedAt() == null) ? "" : (fakeImage.getPlacedAt().getTime() / 1000) + "",
+                    placedById.equals(FakeImage.UNKNOWN_PLAYER_ID) ? "" : placedById.toString(),
+                    fakeImage.getFlags() + ""
             };
             config.addRow(row);
         }
@@ -175,6 +175,7 @@ public class ImageRenderer implements Listener {
 
     /**
      * Add image to renderer
+     * 
      * @param image  Fake image instance
      * @param isInit TRUE if called during renderer startup, FALSE otherwise
      */
@@ -195,8 +196,10 @@ public class ImageRenderer implements Listener {
         }
 
         // Increment count of placed images by player
-        UUID placedById = image.getPlacedBy().getUniqueId();
-        imagesCountByPlayer.compute(placedById, (__, prev) -> (prev == null) ? 1 : prev+1);
+        if (image.getPlacedBy() != null) {
+            UUID placedById = image.getPlacedBy().getUniqueId();
+            imagesCountByPlayer.compute(placedById, (__, prev) -> (prev == null) ? 1 : prev + 1);
+        }
 
         // Spawn image in players nearby
         for (Player player : getPlayersInViewDistance(imageWorldAreaIds)) {
@@ -206,6 +209,7 @@ public class ImageRenderer implements Listener {
 
     /**
      * Add image to renderer
+     * 
      * @param image Fake image instance
      */
     public void addImage(@NotNull FakeImage image) {
@@ -214,9 +218,10 @@ public class ImageRenderer implements Listener {
 
     /**
      * Get image from location
-     * @param  location Fake image location
-     * @param  face     Fake image block face
-     * @return          Fake image instance or NULL if not found
+     * 
+     * @param location Fake image location
+     * @param face     Fake image block face
+     * @return Fake image instance or NULL if not found
      */
     public @Nullable FakeImage getImage(@NotNull Location location, @NotNull BlockFace face) {
         WorldAreaId worldAreaId = WorldAreaId.fromLocation(location);
@@ -238,21 +243,25 @@ public class ImageRenderer implements Listener {
 
     /**
      * Get images from area
-     * @param  world World instance
-     * @param  minX  Minimum X coordinate
-     * @param  maxX  Maximum X coordinate
-     * @param  minZ  Minimum Z coordinate
-     * @param  maxZ  Maximum Z coordinate
-     * @return       List of found images
+     * 
+     * @param world World instance
+     * @param minX  Minimum X coordinate
+     * @param maxX  Maximum X coordinate
+     * @param minZ  Minimum Z coordinate
+     * @param maxZ  Maximum Z coordinate
+     * @return List of found images
      */
     public @NotNull Set<FakeImage> getImages(@NotNull World world, int minX, int maxX, int minZ, int maxZ) {
         Set<FakeImage> response = new HashSet<>();
         for (Map.Entry<WorldAreaId, Set<FakeImage>> entry : images.entrySet()) {
-            if (!entry.getKey().getWorld().getName().equals(world.getName())) continue;
+            if (!entry.getKey().getWorld().getName().equals(world.getName()))
+                continue;
             for (FakeImage image : entry.getValue()) {
                 Location loc = image.getLocation();
-                if (loc.getBlockX() < minX || loc.getBlockX() > maxX) continue;
-                if (loc.getBlockZ() < minZ || loc.getBlockZ() > maxZ) continue;
+                if (loc.getBlockX() < minX || loc.getBlockX() > maxX)
+                    continue;
+                if (loc.getBlockZ() < minZ || loc.getBlockZ() > maxZ)
+                    continue;
                 response.add(image);
             }
         }
@@ -261,6 +270,7 @@ public class ImageRenderer implements Listener {
 
     /**
      * Remove image from renderer
+     * 
      * @param image Fake image instance
      */
     public void removeImage(@NotNull FakeImage image) {
@@ -284,11 +294,12 @@ public class ImageRenderer implements Listener {
 
         // Decrement count of placed images by player
         UUID placedById = image.getPlacedBy().getUniqueId();
-        imagesCountByPlayer.compute(placedById, (__, prev) -> (prev != null && prev > 1) ? prev-1 : null);
+        imagesCountByPlayer.compute(placedById, (__, prev) -> (prev != null && prev > 1) ? prev - 1 : null);
     }
 
     /**
      * Get set of players who have placed images
+     * 
      * @return Offline players
      */
     public @NotNull Set<OfflinePlayer> getPlayersWithPlacedImages() {
@@ -297,6 +308,7 @@ public class ImageRenderer implements Listener {
 
     /**
      * Get number of placed images
+     * 
      * @return Number of placed images
      */
     public int size() {
@@ -307,6 +319,7 @@ public class ImageRenderer implements Listener {
      * Get number of placed images grouped by player
      * <p>
      * NOTE: Response is sorted by image count (descending)
+     * 
      * @return Images count by player
      */
     public @NotNull Map<OfflinePlayer, Integer> getImagesCountByPlayer() {
@@ -323,8 +336,9 @@ public class ImageRenderer implements Listener {
 
     /**
      * Get players in view distance of the provided world area IDs
-     * @param  ids World area IDs
-     * @return     Players inside those world areas
+     * 
+     * @param ids World area IDs
+     * @return Players inside those world areas
      */
     private @NotNull Set<Player> getPlayersInViewDistance(@NotNull WorldAreaId[] ids) {
         Set<WorldAreaId> neighborhood = new HashSet<>();
@@ -344,8 +358,9 @@ public class ImageRenderer implements Listener {
 
     /**
      * Get images in view distance from world area ID
-     * @param  worldAreaId World area ID
-     * @return             Set of fake images
+     * 
+     * @param worldAreaId World area ID
+     * @return Set of fake images
      */
     private @NotNull Set<FakeImage> getImagesInViewDistance(@NotNull WorldAreaId worldAreaId) {
         Set<FakeImage> response = new HashSet<>();
@@ -360,6 +375,7 @@ public class ImageRenderer implements Listener {
 
     /**
      * On player location change
+     * 
      * @param player   Player instance
      * @param location New player location
      */
@@ -381,7 +397,8 @@ public class ImageRenderer implements Listener {
 
         // Get images that should be spawned/destroyed
         Set<FakeImage> desiredState = getImagesInViewDistance(worldAreaId);
-        Set<FakeImage> currentState = (prevWorldAreaId == null) ? new HashSet<>() : getImagesInViewDistance(prevWorldAreaId);
+        Set<FakeImage> currentState = (prevWorldAreaId == null) ? new HashSet<>()
+                : getImagesInViewDistance(prevWorldAreaId);
         Set<FakeImage> imagesToLoad = new HashSet<>(desiredState);
         imagesToLoad.removeAll(currentState);
         Set<FakeImage> imagesToUnload = new HashSet<>(currentState);
@@ -407,7 +424,8 @@ public class ImageRenderer implements Listener {
 
         // Get player's current world area ID
         WorldAreaId worldAreaId = playersLocation.get(player);
-        if (worldAreaId == null) return;
+        if (worldAreaId == null)
+            return;
         playersLocation.remove(player);
 
         // Notify world areas that player quit
@@ -423,11 +441,14 @@ public class ImageRenderer implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
-        if (event.getTo() == null) return;
-        if (event.getFrom().getChunk().equals(event.getTo().getChunk())) return;
+        if (event.getTo() == null)
+            return;
+        if (event.getFrom().getChunk().equals(event.getTo().getChunk()))
+            return;
 
         // Wait until next server tick before handling location change
-        // This is necessary as teleport events get fired *before* teleporting the player
+        // This is necessary as teleport events get fired *before* teleporting the
+        // player
         Bukkit.getScheduler().runTask(plugin, () -> {
             onPlayerLocationChange(event.getPlayer(), event.getTo());
         });
@@ -435,16 +456,20 @@ public class ImageRenderer implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerMove(@NotNull PlayerMoveEvent event) {
-        if (event.getTo() == null) return;
-        if (event.getFrom().getChunk().equals(event.getTo().getChunk())) return;
+        if (event.getTo() == null)
+            return;
+        if (event.getFrom().getChunk().equals(event.getTo().getChunk()))
+            return;
         onPlayerLocationChange(event.getPlayer(), event.getTo());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onVehicleMove(@NotNull VehicleMoveEvent event) {
         List<Entity> passengers = event.getVehicle().getPassengers();
-        if (passengers.isEmpty()) return;
-        if (event.getFrom().getChunk().equals(event.getTo().getChunk())) return;
+        if (passengers.isEmpty())
+            return;
+        if (event.getFrom().getChunk().equals(event.getTo().getChunk()))
+            return;
         for (Entity passenger : passengers) {
             if (passenger instanceof Player) {
                 onPlayerLocationChange((Player) passenger, event.getTo());

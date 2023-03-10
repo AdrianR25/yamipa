@@ -231,6 +231,47 @@ public class ImageCommand {
         return true;
     }
 
+    public static boolean placeImage(
+        @NotNull CommandSender sender,
+        @NotNull ImageFile image,
+        int width,
+        int height,
+        int flags,
+        @NotNull Location location,
+        @NotNull BlockFace face,
+        @NotNull Rotation rotation
+    ) {
+        ImageRenderer renderer = YamipaPlugin.getInstance().getRenderer();
+
+        Player player = (sender instanceof Player) ? (Player) sender : null;
+
+        FakeImage fakeImage = new FakeImage(image.getName(), location, face, rotation,
+            width, height, new Date(), player, flags);
+
+            // Make sure image can be placed
+            for (Location loc : fakeImage.getAllLocations()) {
+                if (player != null) {
+                    if (!Permissions.canEditBlock(player, loc)) {
+                        ActionBar.send(player, ChatColor.RED + "You're not allowed to place an image here!");
+                        return false;
+                    }
+                }
+
+                if (renderer.getImage(loc, face) != null) {
+                    sender.sendMessage(ChatColor.RED + "There's already an image there!");
+                    return false;
+                }
+
+            }
+
+        // Show loading status to command sender
+        sender.sendMessage(ChatColor.AQUA + "Loading image...");
+
+        // Add fake image to renderer
+        renderer.addImage(fakeImage);
+        return true;
+    }
+
     public static void removeImage(@NotNull Player player) {
         SelectBlockTask task = new SelectBlockTask(player);
         task.onSuccess((location, face) -> {
