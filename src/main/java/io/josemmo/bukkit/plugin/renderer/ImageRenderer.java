@@ -146,7 +146,10 @@ public class ImageRenderer implements Listener {
         CsvConfiguration config = new CsvConfiguration();
         for (FakeImage fakeImage : fakeImages) {
             Location location = fakeImage.getLocation();
-            UUID placedById = fakeImage.getPlacedBy().getUniqueId();
+            UUID placedById = null;
+            if (fakeImage.getPlacedBy() != null){
+                placedById = fakeImage.getPlacedBy().getUniqueId();
+            }
             String[] row = new String[] {
                     fakeImage.getFilename(),
                     location.getChunk().getWorld().getName(),
@@ -158,7 +161,7 @@ public class ImageRenderer implements Listener {
                     fakeImage.getWidth() + "",
                     fakeImage.getHeight() + "",
                     (fakeImage.getPlacedAt() == null) ? "" : (fakeImage.getPlacedAt().getTime() / 1000) + "",
-                    placedById.equals(FakeImage.UNKNOWN_PLAYER_ID) ? "" : placedById.toString(),
+                    placedById == null || placedById.equals(FakeImage.UNKNOWN_PLAYER_ID) ? "" : placedById.toString(),
                     fakeImage.getFlags() + ""
             };
             config.addRow(row);
