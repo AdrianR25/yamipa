@@ -184,6 +184,21 @@ public class ImageCommandBridge {
             .withArgument(new ImageFileArgument("filename"))
             .withArgument(new IntegerArgument("width", 1, FakeImage.MAX_DIMENSION))
             .withArgument(new IntegerArgument("height", 1, FakeImage.MAX_DIMENSION))
+            .withArgument(new IntegerArgument("x"))
+            .withArgument(new IntegerArgument("y"))
+            .withArgument(new IntegerArgument("z"))
+            .withArgument(new WorldArgument("world"))
+            .withArgument(new BlockFaceArgument("face"))
+            .withArgument(new RotationArgument("rotation"))
+            .executes((sender, args) -> {
+                Location location = new Location((World) args[7], (int) args[4], (int) args[5], (int) args[6]);
+                ImageCommand.placeImage(sender, (ImageFile) args[1], (int) args[2], (int) args[3], FakeImage.DEFAULT_PLACE_FLAGS, location, (BlockFace) args[8], (Rotation) args[9]);
+            });
+        root.addSubcommand("place")
+            .withPermission("yamipa.command.place", "yamipa.place")
+            .withArgument(new ImageFileArgument("filename"))
+            .withArgument(new IntegerArgument("width", 1, FakeImage.MAX_DIMENSION))
+            .withArgument(new IntegerArgument("height", 1, FakeImage.MAX_DIMENSION))
             .withArgument(new ImageFlagsArgument("flags", FakeImage.DEFAULT_PLACE_FLAGS))
             .executesPlayer((player, args) -> {
                 ImageCommand.placeImage(player, (ImageFile) args[1], (int) args[2], (int) args[3], (int) args[4]);
